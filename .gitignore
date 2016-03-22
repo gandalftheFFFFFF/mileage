@@ -64,6 +64,5 @@ target/
 *.sqlite3
 raw_data
 user_data/*
-milage/settings.py
 milage/local_settings.py
 

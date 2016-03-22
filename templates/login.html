@@ -1,0 +1,13 @@
+{% extends 'index.html' %}
+{% block content %}
+	{% if form %}
+        <form action="{% url 'home' %}" method="POST">
+            {% csrf_token %}
+            {% for field in form %}
+                <p>{{ field.label }}: {{ field }}</p>
+            {% endfor %}
+            <input type="submit" value="Log in" />
+        </form>
+	{% endif %}
+    <p><a href="{% url 'create-user' %}">Sign up</a> </p>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends 'index.html' %}
+{% block content %}
+<div class="container">
+    <div class="row">
+        <h2>Milage</h2>
+
+        {% if form %}
+            <form action="{% url 'milage-index' %}" method="POST" class="post-form">
+            {% csrf_token %}
+                    <div class="form-group">
+                        {% for field in form %}
+                            <label>{{ field.label }}</label>: {{ field.errors }}{{ field }}
+                        {% endfor %}
+                    </div>
+            <button class="btn btn-default" type="submit">Add new</button>
+            </form>
+        {% endif %}
+    </div>
+    <div class="row">
+        {% if latest %}
+        <h2>Latest</h2>
+            <table class="table">
+                <tr>
+                    <td><p><strong>Date</strong></p></td>
+                    <td><p><strong>Km</strong></p></td>
+                    <td><p><strong>Amount</strong></p></td>
+                    <td><p><strong>Liter</strong></p></td>
+                    <td></td>
+                </tr>
+                {% for i in latest %}
+                    <tr>
+                        <td>{{ i.date }}</td>
+                        <td>{{ i.km_stand }}</td>
+                        <td>{{ i.amount }}</td>
+                        <td>{{ i.liter }}</td>
+                        <td>(<a href="{% url 'delete' i.id %}?next={{ request.path }}">delete</a>, <a href="{% url 'edit' i.pk %}">edit</a>)</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% else %}
+            <h2>No history :(</h2>
+        {% endif %}
+    </div>
+</div>
+{% endblock content %}

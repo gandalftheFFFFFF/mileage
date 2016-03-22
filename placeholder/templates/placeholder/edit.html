@@ -1,0 +1,14 @@
+{% extends 'index.html' %}
+{% block content %}
+<h1>Edit</h1>
+
+<form action="{% url 'edit' pk %}" method="POST" class="post-form">
+    {% csrf_token %}
+    <div class="form-group">
+    {% for field in form %}
+        <label>{{ field.label }}</label>: {{ field.errors }}{{ field }}
+    {% endfor %}
+    </div>
+    <button class="btn btn-default" type="submit">Update</button>
+</form>
+{% endblock %}

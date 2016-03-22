@@ -1,0 +1,35 @@
+{% extends 'index.html' %}
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <h1>History</h1>
+            <p><a href="{% url 'milage-index' %}">Add another</a></p>
+            <p><strong><a href="{% url 'clear_history' %}">Clear history</a></strong></p>
+        </div>
+        <div class="row">
+            {% if query %}
+                <table class="table">
+                    <tr>
+                        <td><p><strong>Date</strong></p></td>
+                        <td><p><strong>Km</strong></p></td>
+                        <td><p><strong>Amount</strong></p></td>
+                        <td><p><strong>Liter</strong></p></td>
+                        <td></td>
+                    </tr>
+                    {% for i in query %}
+                        <tr>
+                            <td>{{ i.date }}</td>
+                            <td>{{ i.km_stand }}</td>
+                            <td>{{ i.amount }}</td>
+                            <td>{{ i.liter }}</td>
+                            <td>(<a href="{% url 'delete' i.id %}?next={{ request.path }}">delete</a>, <a href="#">edit</a>)</td>
+                        </tr>
+
+                    {% endfor %}
+                </table>
+            {% else %}
+                <p>No milage history :(</p>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

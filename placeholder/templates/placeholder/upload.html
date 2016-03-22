@@ -1,0 +1,11 @@
+{% extends 'index.html' %}
+{% block content %}
+
+<h1>Upload a <a href="https://en.wikipedia.org/wiki/Comma-separated_values">.csv</a> file</h1>
+<form enctype="multipart/form-data" method="post" action="{% url 'upload' %}">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" value="Upload">
+</form>
+
+{% endblock content %}

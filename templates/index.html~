@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Milage</title>
+	{% load staticfiles %}
+	<link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.min.css' %}">
+</head>
+<body>
+<div class="container">
+	{% block content %}
+	{% endblock %}
+</div>
+<script src="{% static 'js/bootstrap.min.js' %}"></script>
+</body>
+</html>

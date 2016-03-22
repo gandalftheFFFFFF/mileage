@@ -1,0 +1,46 @@
+{% extends 'index.html' %}
+{% block content %}
+<h1>Help</h1>
+<h2>General use</h2>
+<p>This web based application is written in Django and is intended for users of cars and other fuel based modes of transportation</p>
+<p>Each time you tank some fuel, you enter into the application the following details:</p>
+<ul>
+    <li>Date</li>
+    <li>Amount of kilometers driven up to this point</li>
+    <li>Amount of liters of fuel tanked (full volume in metric liters)</li>
+    <li>Cost of fuel tanked (full cost in DKK)</li>
+</ul>
+<p>The application will then provide you with an overview of your mileage, total expenses,
+    fuel cost, etc. You can check out these measures in the
+    <a href="{% url 'overview' %}">overview</a> panel</p>
+
+<h2>Upload data</h2>
+<p>If you have some existing data (i.e. in an Excel spreadsheet) you can upload
+your data in the <a href="{% url 'upload' %}">upload panel</a>. It is important that the format
+of the data file adheres to the following specification:</p>
+<ul>
+    <li>It must consist of 4 columns</li>
+    <li>The names of the columns must be the strings: 'date', 'km', 'liter', 'cost' (the order is irrelevant),
+        and these must be in the first row</li>
+    <li>The day, month and year must be separated with a forward slash ('/')    </li>
+    <li>It is a comma separated value file (i.e. each row is one data entry and each column is separated
+    by a comma).</li>
+</ul>
+<p>If the above format is not followed, the application will not be able to process your data
+in any meaningful way (I'm not a wizard).</p>
+<p>Before pressing the 'upload' button, you also need to specify the format of your date column.
+ If your data is of the format day/month/year, you select the dd/mm/yyyy option, and so on.</p>
+<p>Once you have successfully uploaded your data, the full data set should be available in the
+<a href="{% url 'history' %}">history panel</a>.</p>
+
+<p>A suitable input file can look like the following:</p>
+<pre>
+    date, km, amount, liter
+    1/1/1970, 0, 100, 10
+    1/15/1970, 50, 70, 7
+    2/1/1970, 120, 90, 8
+</pre>
+<h2>Questions</h2>
+<p>If you have any questions or comments, don't hesitate to <a href="{% url 'contact' %}">contact me</a>.</p>
+<p>If you're curious about the applicaton, you can view the <a href="http://www.github.com/nielspedersen/mileage">source code on github</a> </p>
+{% endblock content %}

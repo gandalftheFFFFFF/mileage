@@ -1,0 +1,63 @@
+{% extends 'index.html' %}
+{% block content %}
+<h1>Overview</h1>
+<h3>Total km: {{ total_km }}</h3>
+<h3>Total refills: {{ total_refills }}</h3>
+<h3>Total liters: {{ total_liters }}</h3>
+<h3>Total cost: {{ total_amount }}</h3>
+<hr \>
+<h3>Avg. refill cost: {{ avg_amount|floatformat:2 }}</h3>
+<h3>Avg. refill vol.: {{ avg_liter|floatformat:2 }}</h3>
+
+<div id="price-per-liter" style="width:100%; height:400px;"></div>
+<div id="km-per-liter" style="width:100%; height:400px;"></div>
+{% endblock %}
+{% block scripts %}
+<script>
+    $(function () {
+    $('#price-per-liter').highcharts({
+        chart: {
+            type: 'line'
+        },
+        title: {
+            text: 'Cost of fuel per liter over time'
+        },
+        xAxis: {
+            categories: [ {% for i in hs_dates %} '{{ i|date:"d/m/Y" }}', {% endfor %} ],
+        },
+        yAxis: {
+            title: {
+                text: 'Price/liter'
+            }
+        },
+        series: [{
+            name: 'You!',
+            data: [ {% for i in hs_price_per_liter %} {{i}}, {% endfor %} ],
+        }]
+    });
+});
+
+    $(function () {
+    $('#km-per-liter').highcharts({
+        chart: {
+            type: 'line'
+        },
+        title: {
+            text: 'Km per liter over time'
+        },
+        xAxis: {
+            categories: [ {% for i in hs_dates %} '{{ i|date:"d/m/Y" }}', {% endfor %} ],
+        },
+        yAxis: {
+            title: {
+                text: 'Price/liter'
+            }
+        },
+        series: [{
+            name: 'You!',
+            data: [ {% for i in hs_km_per_liter %} {{i}}, {% endfor %} ],
+        }]
+    });
+});
+</script>
+{% endblock scripts %}

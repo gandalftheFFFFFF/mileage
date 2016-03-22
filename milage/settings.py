@@ -99,5 +99,7 @@ STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'), )
 
 STATIC_ROOT = '/var/www/mileage/'
 
+from .local_settings import *
+
 # COOKIE AGE:
 

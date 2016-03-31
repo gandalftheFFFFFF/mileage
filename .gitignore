@@ -63,7 +63,7 @@ target/
 *.csv
 *.sqlite3
 raw_data
-!user_data/dont_ignore_me
 user_data/*
+!user_data/dont_ignore_me
 milage/local_settings.py
 

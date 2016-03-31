@@ -1,8 +1,9 @@
+from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from .forms import UserForm
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from placeholder.views import index as milage_index
 
 
@@ -36,7 +37,13 @@ def create_user(request):
         form = UserCreationForm(request.POST)
         if form.is_valid():
             new_user = form.save()
-            return render(request, 'login.html', {'form': AuthenticationForm(),})
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password2']
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                login(request, user)
+                return redirect('placeholder.views.index')
+            #return render(request, 'login.html', {'form': AuthenticationForm(),})
     else:
         form = UserCreationForm()
 
@@ -45,3 +52,8 @@ def create_user(request):
         'form': form,
     }
     return render(request, template, context)
+
+
+def log_out(request):
+    logout(request)
+    return HttpResponseRedirect('/')

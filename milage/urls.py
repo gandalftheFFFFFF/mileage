@@ -16,11 +16,12 @@ Including another URLconf
 from django.conf.urls import include, url
 from django.contrib import admin
 from django.views.generic import TemplateView
-from .views import index, create_user
+from .views import index, create_user, log_out
 
 urlpatterns = [
     url(r'^$', index, name='home'),
     url(r'^create-user/$', create_user, name='create-user'),
+    url(r'^logout/$', log_out, name='logout'),
     url(r'^help/$', TemplateView.as_view(template_name='help.html'), name='help'),
     url(r'^contact/$', TemplateView.as_view(template_name='contact.html'), name='contact'),
     url(r'^milage/', include('placeholder.urls')),

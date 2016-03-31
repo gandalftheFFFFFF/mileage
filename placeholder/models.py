@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 
 # Create your models here.
 class MilageInstance(models.Model):
-    date = models.DateField(
+    date = models.DateTimeField(
         default=datetime.now(),
         verbose_name='Dato (yyyy-mm-dd):',
     )
@@ -35,14 +35,17 @@ class MilageInstance(models.Model):
 
     def trip(self):
         try:
-            last_instance = MilageInstance.objects.filter(
-                date__lt=self.date
+            last_instance = MilageInstance.objects.all().filter(
+                date__lte=self.date
             ).filter(
                 user=self.user
+            ).exclude(
+                pk=self.pk
             ).order_by('-date')[0]
         except:
             return 0
         trip = self.km_stand - last_instance.km_stand
+        print('self: {}, last: {}'.format(self.km_stand, last_instance.km_stand))
         return trip
 
     @classmethod

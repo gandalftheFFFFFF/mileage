@@ -90,8 +90,12 @@ def overview(request):
     total_refills = query_length
 
     # AVGs:
-    avg_amount = total_amount / query_length
-    avg_liter = total_liters / query_length
+    if query_length != 0:
+        avg_amount = total_amount / query_length
+        avg_liter = total_liters / query_length
+    else:
+        avg_amount = 0
+        avg_liter = 0
 
     context = {
         'total_km': total_km,

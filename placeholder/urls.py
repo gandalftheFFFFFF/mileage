@@ -5,6 +5,7 @@ from django.views.generic import TemplateView
 urlpatterns = [
     # url(r'^$', TemplateView.as_view(template_name='placeholder/milage-index.html')),
     url(r'^$', index, name='milage-index'),
+    url(r'^cars/$', cars, name='cars'),
     url(r'^history/$', history, name='history'),
     url(r'^overview/$', overview, name='overview'),
     url(r'upload/$', upload_csv, name='upload'),

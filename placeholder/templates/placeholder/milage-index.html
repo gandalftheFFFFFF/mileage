@@ -2,19 +2,23 @@
 {% block content %}
 <div class="container">
     <div class="row">
-        <h2>Milage</h2>
-
-        {% if form %}
-            <form action="{% url 'milage-index' %}" method="POST" class="post-form">
-            {% csrf_token %}
-                    <div class="form-group">
-                        {% for field in form %}
-                            <label>{{ field.label }}</label>: {{ field.errors }}{{ field }}
-                        {% endfor %}
-                    </div>
-            <button class="btn btn-default" type="submit">Add new</button>
-            </form>
+        {% if car %}
+            <h2>Add new entry</h2>
+            {% if form %}
+                <form action="{% url 'milage-index' %}" method="POST" class="post-form">
+                {% csrf_token %}
+                        <div class="form-group">
+                            {% for field in form %}
+                                <label>{{ field.label }}</label>: {{ field.errors }}{{ field }}
+                            {% endfor %}
+                        </div>
+                <button class="btn btn-default" type="submit">Add new</button>
+                </form>
+            {% endif %}
+        {% else %}
+            <h2><a href="{% url 'cars' %}">Register a car first</a></h2>
         {% endif %}
+
     </div>
     <div class="row">
         {% if latest %}
@@ -37,8 +41,6 @@
                     </tr>
                 {% endfor %}
             </table>
-        {% else %}
-            <h2>No history :(</h2>
         {% endif %}
     </div>
 </div>

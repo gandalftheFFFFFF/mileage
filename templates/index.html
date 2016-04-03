@@ -20,14 +20,6 @@
           <span class="icon-bar"></span>
         </button>
         <a class="navbar-brand" href="{% url 'home' %}">DinBenzin</a>
-        <ul class="nav navbar-nav navbar-left">
-          {% if user.is_authenticated %}
-          <li><a href="{% url 'logout' %}">Log out</a></li>
-          {% else %}
-          <li><a href="{% url 'home' %}">Log in</a></li>
-          {% endif %}
-          <li><a href="{% url 'contact' %}">Contact</a></li>
-        </ul>
       </div>
       <div id="navbar" class="navbar-collapse collapse">
         <ul class="nav navbar-nav navbar-right">
@@ -36,6 +28,12 @@
           <li><a href="{% url 'upload' %}">Upload</a></li>
           <li><a href="{% url 'home' %}">Add</a></li>
           <li><a href="{% url 'help' %}">Help</a></li>
+          <li><a href="{% url 'contact' %}">Contact</a></li>
+          {% if user.is_authenticated %}
+          <li><a href="{% url 'logout' %}">Log out</a></li>
+          {% else %}
+          <li><a href="{% url 'home' %}">Log in</a></li>
+          {% endif %}
         </ul>
       </div>
     </div>

@@ -1,27 +1,30 @@
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
-from .models import MilageInstance, MilageForm
+from .models import MilageInstance, MilageForm, Car, CarForm
 from .forms import UploadFileForm
 from django.contrib.auth.decorators import login_required
+from django.db import IntegrityError
 import csv
 
 @login_required(login_url='/')
 def index(request):
-
+    car = Car.objects.all().filter(user=request.user)
     if request.method == 'POST':
-        form = MilageForm(request.POST)
+
+        form = MilageForm(user=request.user, instance=request.POST)
         if form.is_valid():
             new_obj = form.save(commit=False)
             new_obj.user = request.user
             new_obj.save()
-            form = MilageForm()
+            form = MilageForm(request.user)
 
     else:
-        form = MilageForm()
+        form = MilageForm(request.user)
 
     latest = MilageInstance.objects.filter(user=request.user)[0:3]
     template = 'placeholder/milage-index.html'
     context = {
+        'car': car,
         'form': form,
         'latest': latest,
     }
@@ -115,9 +118,6 @@ def overview(request):
 
 def get_date(date, format):
     split = date.split('/')
-    day = 1
-    month = 1
-    year = 1970
         # check date format
     if (format == 'dd/mm/yyyy'):
         day = split[0]
@@ -188,7 +188,7 @@ def edit(request, instance_id):
     if request.method == 'GET':
         if instance.user != request.user:
             return HttpResponseRedirect('404.html')
-        form = MilageForm(initial={
+        form = MilageForm(user=request.user, initial={
             'date': instance.date,
             'km_stand': instance.km_stand,
             'amount': instance.amount,
@@ -196,7 +196,7 @@ def edit(request, instance_id):
         })
         return render(request, 'placeholder/edit.html', {'form': form, 'pk': instance_id})
     elif request.method == 'POST' and request.user == instance.user:
-        updated_form = MilageForm(request.POST)
+        updated_form = MilageForm(request.POST, user=request.user)
         if updated_form.is_valid():
             cleaned_data = updated_form.cleaned_data
             instance.date = cleaned_data['date']
@@ -208,5 +208,26 @@ def edit(request, instance_id):
     else:
         return HttpResponseRedirect('404.html')
 
+
+def cars(request):
+    form = CarForm()
+    registered_cars = Car.objects.all().filter(user=request.user)
+    if request.method == 'POST':
+        form = CarForm(request.POST)
+        if form.is_valid():
+            try:
+                car = form.save(commit=False)
+                car.registration_no = car.registration_no.upper() # Upper case letters!
+                car.user = request.user
+                car.save()
+                form = CarForm()
+            except IntegrityError:
+                form.add_error('registration_no', 'You already have a car with that registration number')
+
+    context = {
+        'form': form,
+        'registered_cars': registered_cars,
+    }
+    return render(request, 'placeholder/cars.html', context)
 
 

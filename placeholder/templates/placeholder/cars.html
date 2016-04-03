@@ -1,0 +1,24 @@
+{% extends 'index.html' %}
+{% block content %}
+{% if form %}
+    <form action="{% url 'cars' %}" method="POST" class="post-form">
+    {% csrf_token %}
+        <div class="form-group">
+            {% for field in form %}
+                <label>{{ field.label }}</label>: {{ field.errors }}{{ field }}
+            {% endfor %}
+        </div>
+    <button class="btn btn-default" type="submit">Add new car</button>
+    </form>
+{% endif %}
+{% if registered_cars %}
+<hr />
+<h2>
+    Your car{% if registered_cars|length > 1 %}s{% endif %}:
+</h2>
+{% for car in registered_cars %}
+    <p>{{ car }}</p>
+{% endfor %}
+{% endif %}
+
+{% endblock content %}

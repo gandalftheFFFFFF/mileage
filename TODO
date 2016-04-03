@@ -1,3 +1,4 @@
 TODO:
 Rename km_stand to 'km'
 rename amount to 'cost'
+Modify tables (overview, history) to be more readable on phone

@@ -112,7 +112,7 @@ class MilageInstance(models.Model):
 
 
 class MilageForm(ModelForm):
-    def __init__(self, user=None, *args, **kwargs):
+    def __init__(self, user, *args, **kwargs):
         super(MilageForm, self).__init__(*args, **kwargs)
         for field in iter(self.fields):
             self.fields[field].widget.attrs.update({

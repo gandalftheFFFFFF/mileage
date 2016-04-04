@@ -6,12 +6,13 @@ from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 import csv
 
+
 @login_required(login_url='/')
 def index(request):
     car = Car.objects.all().filter(user=request.user)
     if request.method == 'POST':
 
-        form = MilageForm(user=request.user, instance=request.POST)
+        form = MilageForm(data=request.POST, user=request.user)
         if form.is_valid():
             new_obj = form.save(commit=False)
             new_obj.user = request.user
@@ -41,10 +42,11 @@ def history(request):
     }
     return render(request, template, context)
 
+
 @login_required(login_url='/')
 def delete(request, id):
     obj = MilageInstance.objects.filter(pk=id, user=request.user).delete()
-    return redirect('/')
+    return redirect(request.META.get('HTTP_REFERER'))
 
 
 @login_required(login_url='/')

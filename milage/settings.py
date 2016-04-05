@@ -103,3 +103,5 @@ from .local_settings import *
 
 # COOKIE AGE:
 
+# LOGIN_URL
+LOGIN_URL = '/'

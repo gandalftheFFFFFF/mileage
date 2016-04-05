@@ -1,4 +1,7 @@
 TODO:
+Change milage to mileage
 Rename km_stand to 'km'
 rename amount to 'cost'
 Modify tables (overview, history) to be more readable on phone
+Add check when adding new milageinstance that "driven km" is not strictly less than last instance
+Fix instances with same date (total km calc is bugged)

@@ -6,8 +6,8 @@ from django.utils import timezone
 
 FUEL_TYPES = (
     ('DIESEL', 'Diesel'),
-    ('PETROL', 'Petrol'),
     ('ELECTRICITY', 'Electricity'),
+    ('PETROL', 'Petrol'),
 )
 
 
@@ -61,6 +61,7 @@ class ExpenseForm(ModelForm):
 
 
 class MilageInstance(models.Model):
+    car = models.ForeignKey(Car)
     date = models.DateTimeField(
         default=timezone.now(),
         verbose_name='Date (yyyy-mm-dd):',
@@ -69,7 +70,7 @@ class MilageInstance(models.Model):
     amount = models.DecimalField(max_digits=18, decimal_places=2, verbose_name='Fuel cost')
     liter = models.DecimalField(max_digits=18, decimal_places=2, verbose_name='Fuel volume')
     user = models.ForeignKey(User)
-    car = models.ForeignKey(Car)
+
 
     class Meta:
         ordering = ['-date',]
@@ -91,10 +92,12 @@ class MilageInstance(models.Model):
 
     def trip(self):
         try:
-            last_instance = MilageInstance.objects.all().filter(
+            last_instance = MilageInstance.objects.filter(
                 date__lte=self.date
             ).filter(
                 user=self.user
+            ).filter(
+                car=self.car
             ).exclude(
                 pk=self.pk
             ).order_by('-date')[0]
@@ -102,7 +105,7 @@ class MilageInstance(models.Model):
             return 0
 
         trip = self.km_stand - last_instance.km_stand
-        print('self: {}, last: {}'.format(self.km_stand, last_instance.km_stand))
+        print('self: {}, last: {}, trip: {}'.format(self.km_stand, last_instance.km_stand, trip))
         return trip
 
     @classmethod
@@ -112,13 +115,22 @@ class MilageInstance(models.Model):
 
 
 class MilageForm(ModelForm):
-    def __init__(self, user, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
+        self.request = kwargs.pop('request', None)
         super(MilageForm, self).__init__(*args, **kwargs)
+
         for field in iter(self.fields):
             self.fields[field].widget.attrs.update({
                 'class': 'form-control',
             })
-        self.fields['car'].queryset = Car.objects.filter(user=user)
+
+        if self.request is not None:
+            current_car = self.request.session.get('current_car', None)
+            print(current_car)
+            self.fields['car'].initial = Car.objects.get(registration_no=current_car, user=self.user)
+
+        self.fields['car'].queryset = Car.objects.filter(user=self.user)
         self.fields['car'].empty_label = None
 
     class Meta:

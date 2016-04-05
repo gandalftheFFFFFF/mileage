@@ -1,6 +1,19 @@
 {% extends 'index.html' %}
 {% block content %}
 <h1>Overview</h1>
+
+{% if cars %}
+
+<p>Currently showing stats for {{ current_car }}</p>
+<p><a data-toggle="collapse" href="#car-list">Change car</a></p>
+<div id="car-list" class="collapse">
+    <ul>
+        {% for car in cars %}
+        {% if car != current_car %}<li><a href="{% url 'overview-car' car.registration_no %}">{{ car }}</a></li>{% endif %}
+        {% endfor %}
+    </ul>
+</div>
+
 <h3>Total km: {{ total_km }}</h3>
 <h3>Total refills: {{ total_refills }}</h3>
 <h3>Total liters: {{ total_liters }}</h3>
@@ -11,6 +24,10 @@
 
 <div id="price-per-liter" style="width:100%; height:400px;"></div>
 <div id="km-per-liter" style="width:100%; height:400px;"></div>
+{% else %}
+<h2>You need to <a href="{% url 'cars' %}">register a car</a> to see statistics for it.</h2>
+{% endif %}
+
 {% endblock %}
 {% block scripts %}
 <script>

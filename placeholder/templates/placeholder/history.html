@@ -1,6 +1,15 @@
 {% extends 'index.html' %}
 {% block content %}
     <div class="container">
+        <p>Currently showing stats for {{ current_car }}</p>
+        <p><a data-toggle="collapse" href="#car-list">Change car</a></p>
+        <div id="car-list" class="collapse">
+            <ul>
+                {% for car in cars %}
+                {% if car != current_car %}<li><a href="{% url 'history-car' car.registration_no %}">{{ car }}</a></li>{% endif %}
+                {% endfor %}
+            </ul>
+        </div>
         <div class="row">
             <h1>History</h1>
             <p><a href="{% url 'milage-index' %}">Add another</a></p>
@@ -22,7 +31,7 @@
                             <td>{{ i.km_stand }}</td>
                             <td>{{ i.amount }}</td>
                             <td>{{ i.liter }}</td>
-                            <td>(<a href="{% url 'delete' i.id %}?next={{ request.path }}">delete</a>, <a href="#">edit</a>)</td>
+                            <td>(<a href="{% url 'delete' i.id %}?next={{ request.path }}">delete</a>, <a href="{% url 'edit' i.pk %}">edit</a>)</td>
                         </tr>
 
                     {% endfor %}

@@ -4,6 +4,7 @@ from .models import MilageInstance, MilageForm, Car, CarForm
 from .forms import UploadFileForm
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
+from django.utils import timezone
 import csv
 
 
@@ -11,18 +12,23 @@ import csv
 def index(request):
     car = Car.objects.all().filter(user=request.user)
     if request.method == 'POST':
-
-        form = MilageForm(data=request.POST, user=request.user)
+        form = MilageForm(data=request.POST, user=request.user, request=request)
         if form.is_valid():
             new_obj = form.save(commit=False)
             new_obj.user = request.user
+            new_obj.date = timezone.now()
             new_obj.save()
-            form = MilageForm(request.user)
+            request.session['current_car'] = new_obj.car.registration_no
+            form = MilageForm(user=request.user, request=request)
 
     else:
-        form = MilageForm(request.user)
-
-    latest = MilageInstance.objects.filter(user=request.user)[0:3]
+        form = MilageForm(user=request.user, request=request)
+    session_car = request.session.get('current_car', None)
+    if session_car is not None:
+        current_car = Car.objects.get(user=request.user, registration_no=session_car)
+    else:
+        current_car = [0]
+    latest = MilageInstance.objects.filter(user=request.user, car=current_car)[0:3]
     template = 'placeholder/milage-index.html'
     context = {
         'car': car,
@@ -34,11 +40,26 @@ def index(request):
 
 
 @login_required(login_url='/')
-def history(request):
-    query = MilageInstance.objects.filter(user=request.user)
+def history(request, car=None):
+    cars = Car.objects.filter(user=request.user)
+    if car is not None:
+        current_car = Car.objects.get(registration_no=car, user=request.user)
+        # Update or set the session car
+        request.session['current_car'] = current_car.registration_no
+    else:
+        # get the session car (reg.no)
+        session_car = request.session.get('current_car', None)
+        if session_car is None:
+            if cars is not None:
+                current_car = cars[0]
+        else:
+            current_car = Car.objects.get(user=request.user, registration_no=session_car)
+    query = MilageInstance.objects.filter(user=request.user, car=current_car)
     template = 'placeholder/history.html'
     context = {
         'query': query,
+        'cars': cars,
+        'current_car': current_car,
     }
     return render(request, template, context)
 
@@ -50,11 +71,25 @@ def delete(request, id):
 
 
 @login_required(login_url='/')
-def overview(request):
-
-    context = {}
-
-    query = MilageInstance.objects.filter(user=request.user)
+def overview(request, car=None):
+    # PRIORITY: User selected a new car: car is not None
+    # else: is there a session car?
+    # else: take the newest added car!
+    cars = Car.objects.filter(user=request.user)
+    if car is not None:
+        current_car = Car.objects.get(registration_no=car, user=request.user)
+        # Update or set the session car
+        request.session['current_car'] = current_car.registration_no
+    else:
+        # get the session car (reg.no)
+        session_car = request.session.get('current_car', None)
+        if session_car is None:
+            if cars is not None:
+                current_car = cars[0]
+        else:
+            current_car = Car.objects.get(user=request.user, registration_no=session_car)
+    print(current_car)
+    query = MilageInstance.objects.filter(user=request.user).filter(car=current_car)
     query_length = query.count()
 
     # Total km driven
@@ -103,6 +138,8 @@ def overview(request):
         avg_liter = 0
 
     context = {
+        'cars': cars,
+        'current_car': current_car,
         'total_km': total_km,
         'total_liters': total_liters,
         'total_amount': total_amount,

@@ -1,0 +1,9 @@
+<p>Currently showing stats for {{ current_car }} {% if cars|length > 1 %}<a data-toggle="collapse" href="#car-list">(change car)</a>{% endif %}</p>
+<div id="car-list" class="collapse">
+    <ul>
+        {% for car in cars %}
+        {% if car != current_car %}<li><a href="{% url 'change-car' car.registration_no %}">{{ car }}</a></li>{% endif %}
+        {% endfor %}
+    </ul>
+</div>
+<p><a href="{% url 'cars' %}">Register or edit cars</a></p>

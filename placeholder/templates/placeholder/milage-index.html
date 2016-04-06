@@ -2,7 +2,8 @@
 {% block content %}
 <div class="container">
     <div class="row">
-        {% if car %}
+        {% if cars %}
+            {% include 'placeholder/change-car-include.html' %}
             <h2>Add new entry</h2>
             {% if form %}
                 <form action="{% url 'milage-index' %}" method="POST" class="post-form">

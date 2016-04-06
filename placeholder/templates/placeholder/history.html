@@ -1,16 +1,8 @@
 {% extends 'index.html' %}
 {% block content %}
     <div class="container">
-        <p>Currently showing stats for {{ current_car }}</p>
-        <p><a data-toggle="collapse" href="#car-list">Change car</a></p>
-        <div id="car-list" class="collapse">
-            <ul>
-                {% for car in cars %}
-                {% if car != current_car %}<li><a href="{% url 'history-car' car.registration_no %}">{{ car }}</a></li>{% endif %}
-                {% endfor %}
-            </ul>
-        </div>
         <div class="row">
+            {% include 'placeholder/change-car-include.html' %}
             <h1>History</h1>
             <p><a href="{% url 'milage-index' %}">Add another</a></p>
             <p><strong><a href="{% url 'clear_history' %}">Clear history</a></strong></p>
@@ -37,7 +29,7 @@
                     {% endfor %}
                 </table>
             {% else %}
-                <p>No milage history :(</p>
+                <p>No milage history for this car :(</p>
             {% endif %}
         </div>
     </div>

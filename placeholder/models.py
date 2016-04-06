@@ -14,7 +14,7 @@ FUEL_TYPES = (
 class Car(models.Model):
     registration_no = models.CharField(max_length=10)
     price = models.DecimalField(max_digits=9, decimal_places=2)
-    fuel_type = models.CharField(max_length=10, choices=FUEL_TYPES, default='PETROL')
+    fuel_type = models.CharField(max_length=20, choices=FUEL_TYPES, default='PETROL')
     date = models.DateField(verbose_name='Date (yyyy-mm-dd):')
     text = models.TextField(null=True, blank=True)
     user = models.ForeignKey(User)
@@ -127,8 +127,12 @@ class MilageForm(ModelForm):
 
         if self.request is not None:
             current_car = self.request.session.get('current_car', None)
-            print(current_car)
-            self.fields['car'].initial = Car.objects.get(registration_no=current_car, user=self.user)
+            try:
+                car = Car.objects.get(registration_no=current_car, user=self.user)
+            except:
+                car = None
+            if car is not None:
+                self.fields['car'].initial = car
 
         self.fields['car'].queryset = Car.objects.filter(user=self.user)
         self.fields['car'].empty_label = None

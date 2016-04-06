@@ -17,7 +17,7 @@
     Your car{% if registered_cars|length > 1 %}s{% endif %}:
 </h2>
 {% for car in registered_cars %}
-    <p>{{ car }}</p>
+    <p>{{ car }} (<a href="{% url 'car-delete' car.registration_no %}">delete</a>, <a href="{% url 'car-edit' car.pk %}">edit</a>)</p>
 {% endfor %}
 {% endif %}
 

@@ -1,16 +1,46 @@
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import render, redirect
 from .models import MilageInstance, MilageForm, Car, CarForm
 from .forms import UploadFileForm
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.utils import timezone
+from django.core.exceptions import ObjectDoesNotExist
 import csv
+
+
+def get_current_car(request):
+    # current_car priority:
+    # 1: session car
+    # 2: latest added car
+    user = request.user
+    cars = Car.objects.filter(user=user)
+    print(cars)
+    if cars:
+        # User has cars, so either we can get or set a car
+        session_car_reg_no = request.session.get('current_car', None)
+        if session_car_reg_no is not None:
+            try:
+                current_car = Car.objects.get(user=user, registration_no=session_car_reg_no)
+            except ObjectDoesNotExist:
+                current_car = cars[0]
+                request.session['current_car'] = current_car.registration_no
+        else:
+            current_car = cars[0]
+            request.session['current_car'] = current_car.registration_no
+        return current_car
+    else:
+        # There are no cars for that user, thus we can clear the session car:
+        try:
+            del request.session['current_car']
+        except KeyError:
+            pass
+        return None
 
 
 @login_required(login_url='/')
 def index(request):
-    car = Car.objects.all().filter(user=request.user)
+    cars = Car.objects.all().filter(user=request.user)
     if request.method == 'POST':
         form = MilageForm(data=request.POST, user=request.user, request=request)
         if form.is_valid():
@@ -23,15 +53,12 @@ def index(request):
 
     else:
         form = MilageForm(user=request.user, request=request)
-    session_car = request.session.get('current_car', None)
-    if session_car is not None:
-        current_car = Car.objects.get(user=request.user, registration_no=session_car)
-    else:
-        current_car = [0]
+    current_car = get_current_car(request)
     latest = MilageInstance.objects.filter(user=request.user, car=current_car)[0:3]
     template = 'placeholder/milage-index.html'
     context = {
-        'car': car,
+        'cars': cars,
+        'current_car': current_car,
         'form': form,
         'latest': latest,
     }
@@ -40,20 +67,9 @@ def index(request):
 
 
 @login_required(login_url='/')
-def history(request, car=None):
+def history(request):
     cars = Car.objects.filter(user=request.user)
-    if car is not None:
-        current_car = Car.objects.get(registration_no=car, user=request.user)
-        # Update or set the session car
-        request.session['current_car'] = current_car.registration_no
-    else:
-        # get the session car (reg.no)
-        session_car = request.session.get('current_car', None)
-        if session_car is None:
-            if cars is not None:
-                current_car = cars[0]
-        else:
-            current_car = Car.objects.get(user=request.user, registration_no=session_car)
+    current_car = get_current_car(request)
     query = MilageInstance.objects.filter(user=request.user, car=current_car)
     template = 'placeholder/history.html'
     context = {
@@ -71,38 +87,11 @@ def delete(request, id):
 
 
 @login_required(login_url='/')
-def overview(request, car=None):
-    # PRIORITY: User selected a new car: car is not None
-    # else: is there a session car?
-    # else: take the newest added car!
+def overview(request):
     cars = Car.objects.filter(user=request.user)
-    if car is not None:
-        current_car = Car.objects.get(registration_no=car, user=request.user)
-        # Update or set the session car
-        request.session['current_car'] = current_car.registration_no
-    else:
-        # get the session car (reg.no)
-        session_car = request.session.get('current_car', None)
-        if session_car is None:
-            if cars is not None:
-                current_car = cars[0]
-        else:
-            current_car = Car.objects.get(user=request.user, registration_no=session_car)
-    print(current_car)
+    current_car = get_current_car(request)
     query = MilageInstance.objects.filter(user=request.user).filter(car=current_car)
     query_length = query.count()
-
-    # Total km driven
-    #### STATS
-    # total_km
-    # total_liters
-    # total_amount
-    # total_refills
-    # avg_amount
-    # avg_liter
-    # km_per_liter
-    # amount_per_liter
-
 
     # TOTALs:
     total_km = 0
@@ -115,7 +104,7 @@ def overview(request, car=None):
     hs_dates = []
 
     for q in query:
-        total_km = total_km + q.trip()
+        total_km = total_km + q.trip() # bad time complexity
         total_liters = total_liters + q.liter
         total_amount = total_amount + q.amount
         hs_price_per_liter.append(q.amount_pr_liter())
@@ -177,14 +166,13 @@ def get_date(date, format):
     return '-'.join([year, month, day])
 
 
-def handle_uploaded_file(user, date_format, f):
+def handle_uploaded_file(user, date_format, f, car):
     with open('user_data/{}-data.csv'.format(user), 'wb+') as destination:
         for chunk in f.chunks():
             destination.write(chunk)
     with open('user_data/{}-data.csv'.format(user), 'r', encoding='utf-8') as f:
         reader = csv.reader(f)
         headers = next(reader, None)
-        print(headers)
         for row in reader:
             to_add = {
                 headers[0]: row[0],
@@ -192,25 +180,27 @@ def handle_uploaded_file(user, date_format, f):
                 headers[2]: row[2],
                 headers[3]: row[3],
             }
-            print(to_add)
             new_instance = MilageInstance.create(
                 date=get_date(to_add['date'], date_format),
                 km_stand=to_add['km'],
                 amount=to_add['cost'],
                 liter=to_add['liter'],
-                user=user
+                user=user,
+                car=car,
             )
             new_instance.save()
 
 @login_required(login_url='/')
 def upload_csv(request):
-    form = UploadFileForm
+    form = UploadFileForm(user=request.user)
     if request.method == 'POST':
-        form = UploadFileForm(request.POST, request.FILES)
+        form = UploadFileForm(request.POST, request.FILES, user=request.user)
         if form.is_valid():
             cleaned_data = form.cleaned_data
             date_format = cleaned_data['date_format']
-            handle_uploaded_file(request.user, date_format, request.FILES['file'])
+            car = cleaned_data['car']
+            print(car)
+            handle_uploaded_file(request.user, date_format, request.FILES['file'], car)
             return HttpResponseRedirect('/milage/history')
     return render(request, 'placeholder/upload.html', {'form': form})
 
@@ -248,6 +238,7 @@ def edit(request, instance_id):
         return HttpResponseRedirect('404.html')
 
 
+@login_required
 def cars(request):
     form = CarForm()
     registered_cars = Car.objects.all().filter(user=request.user)
@@ -259,6 +250,7 @@ def cars(request):
                 car.registration_no = car.registration_no.upper() # Upper case letters!
                 car.user = request.user
                 car.save()
+                request.session['current_car'] = car.registration_no # set new current car
                 form = CarForm()
             except IntegrityError:
                 form.add_error('registration_no', 'You already have a car with that registration number')
@@ -270,3 +262,42 @@ def cars(request):
     return render(request, 'placeholder/cars.html', context)
 
 
+@login_required
+def car_edit(request, car_id):
+    success = None
+    if request.method == 'POST':
+        car = Car.objects.get(pk=car_id)
+        form = CarForm(request.POST, instance=car)
+        if form.is_valid():
+            form.save()
+            success = True
+    else:
+        form = CarForm(instance=Car.objects.get(pk=car_id))
+
+    context = {
+        'form': form,
+        'pk': car_id,
+        'success': success,
+    }
+
+    template = 'placeholder/car-edit.html'
+    return render(request, template, context)
+
+
+@login_required
+def car_delete(request, reg_no):
+    try:
+        car = Car.objects.get(user=request.user, registration_no=reg_no)
+        mileage_instances = MilageInstance.objects.filter(user=request.user, car=car)
+        car.delete()
+        mileage_instances.delete()
+        current_car = get_current_car(request) # will take care of session car etc.
+    except ObjectDoesNotExist:
+        pass
+    return redirect(request.META.get('HTTP_REFERER'))
+
+
+@login_required
+def change_car(request, reg_no):
+    request.session['current_car'] = reg_no
+    return redirect(request.META.get('HTTP_REFERER'))

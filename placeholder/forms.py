@@ -1,5 +1,4 @@
-__author__ = 'niels'
-
+from placeholder.models import Car
 from django import forms
 
 
@@ -31,3 +30,9 @@ VOLUME_CHOICES = [
 class UploadFileForm(forms.Form):
     file = forms.FileField()
     date_format = forms.ChoiceField(choices=DATE_CHOICES)
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user')
+        super(UploadFileForm, self).__init__(*args, **kwargs)
+        self.fields['car'] = forms.ModelChoiceField(queryset=Car.objects.filter(user=user))
+        self.fields['car'].empty_label = None

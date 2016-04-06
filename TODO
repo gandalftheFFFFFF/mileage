@@ -5,3 +5,5 @@ rename amount to 'cost'
 Modify tables (overview, history) to be more readable on phone
 Add check when adding new milageinstance that "driven km" is not strictly less than last instance
 Fix instances with same date (total km calc is bugged)
+Generalize "session car" message at top of index, history, and overview
+Rewrite trip calc (iterate over queryset from oldest to newest)

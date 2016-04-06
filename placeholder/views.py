@@ -239,7 +239,7 @@ def edit(request, instance_id):
 
 
 @login_required
-def cars(request):
+def cars_overview(request):
     form = CarForm()
     registered_cars = Car.objects.all().filter(user=request.user)
     if request.method == 'POST':

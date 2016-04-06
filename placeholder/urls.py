@@ -5,7 +5,7 @@ from django.views.generic import TemplateView
 urlpatterns = [
     # url(r'^$', TemplateView.as_view(template_name='placeholder/milage-index.html')),
     url(r'^$', index, name='milage-index'),
-    url(r'^cars/$', cars, name='cars'),
+    url(r'^cars/$', cars_overview, name='cars'),
     url(r'^cars/edit/([0-9]+)/$', car_edit, name='car-edit'),
     url(r'^cars/delete/([0-å]+)/$', car_delete, name='car-delete'),
     url(r'^history/$', history, name='history'),
